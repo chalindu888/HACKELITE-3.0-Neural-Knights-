@@ -82,7 +82,7 @@ def web_dashboard():
         </style>
     </head>
     <body>
-        <h1>🏥 MediSense AI Cloud Dashboard</h1>
+        <h1> MediSense AI Cloud Dashboard</h1>
         <div class="metrics">
             <div class="card"><h3>Total Symptoms</h3><p>{symptom_count}</p></div>
             <div class="card"><h3>Total Diseases</h3><p>{disease_count}</p></div>
