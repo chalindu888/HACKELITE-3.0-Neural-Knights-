@@ -1,17 +1,14 @@
-from sqlalchemy import create_engine
-from sqlalchemy.ext.declarative import declarative_base
-from sqlalchemy.orm import sessionmaker
+from pymongo import MongoClient
 
 
-SQLALCHEMY_DATABASE_URL = "postgresql://postgres:postgres@localhost:5432/medisense_db"
+MONGO_DETAILS = "mongodb://localhost:27018"
 
-engine = create_engine(SQLALCHEMY_DATABASE_URL)
-SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
-Base = declarative_base()
+client = MongoClient(MONGO_DETAILS)
 
-def get_db():
-    db = SessionLocal()
-    try:
-        yield db
-    finally:
-        db.close()
+db = client.medisense_db
+
+# Collections (Tables)
+symptoms_collection = db.get_collection("symptoms")
+diseases_collection = db.get_collection("diseases")
+patients_collection = db.get_collection("patients")
+diagnosis_collection = db.get_collection("diagnosis_records")
