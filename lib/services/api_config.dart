@@ -10,5 +10,5 @@ class ApiConfig {
 
   static String get syncSymptoms => "$baseUrl/api/v1/sync/symptoms";
   static String get syncDiseases => "$baseUrl/api/v1/sync/diseases";
-  static String get syncDiagnosis => "$baseUrl/api/v1/sync/diagnosis";
+  static String get syncDiagnosis => "$baseUrl/api/v1/sync/diagnosis"
 }
