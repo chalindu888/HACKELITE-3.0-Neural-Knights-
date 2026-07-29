@@ -1,18 +1,18 @@
-from db import symptoms_collection, diseases_collection
+import pymongo
 
-def seed_data():
-    
-    symptoms_collection.delete_many({})
-    diseases_collection.delete_many({})
+client = pymongo.MongoClient("mongodb://localhost:27018")
+db = client["medisense_db"]
 
-    # Sample Symptoms
-    sample_symptoms = [
-        {"name": "Fever", "severity": "Mild"},
-        {"name": "Cough", "severity": "Moderate"}
-    ]
-    symptoms_collection.insert_many(sample_symptoms)
+# Patients data
+patients_data = [
+    {
+        "name": "Kamal Perera",
+        "phone": "0771234567",
+        "age": 35,
+        "gender": "Male"
+    }
+]
 
-    print("Data seeded successfully into MongoDB!")
-
-if __name__ == "__main__":
-    seed_data()
+# Insert into patients collection
+db.patients.insert_many(patients_data)
+print("Patients seeded successfully!")
