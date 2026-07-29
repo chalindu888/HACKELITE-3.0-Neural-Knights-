@@ -1,19 +1,18 @@
+from datetime import datetime
 from fastapi import FastAPI, HTTPException
 from fastapi.responses import HTMLResponse
-from pymongo import MongoClient
 from pymongo.errors import PyMongoError
-from datetime import datetime
+
+
+from db import (
+    diagnosis_records_collection,
+    diseases_collection,
+    patients_collection,
+    symptoms_collection,
+)
 
 app = FastAPI(title="MediSense AI - Sync API & Dashboard", version="1.0.0")
 
-# MongoDB Connection
-client = MongoClient("mongodb://localhost:27018/")
-db = client["medisense_db"]
-
-symptoms_collection = db["symptoms"]
-diseases_collection = db["diseases"]
-patients_collection = db["patients"]
-diagnosis_records_collection = db["diagnosis_records"]
 
 @app.get("/api/v1/sync/symptoms", tags=["Sync"])
 def sync_symptoms():
@@ -23,6 +22,7 @@ def sync_symptoms():
     except PyMongoError as e:
         raise HTTPException(status_code=500, detail=str(e))
 
+
 @app.get("/api/v1/sync/diseases", tags=["Sync"])
 def sync_diseases():
     try:
@@ -30,6 +30,7 @@ def sync_diseases():
         return {"status": "success", "count": len(diseases), "data": diseases}
     except PyMongoError as e:
         raise HTTPException(status_code=500, detail=str(e))
+
 
 @app.post("/api/v1/sync/diagnosis", tags=["Sync"])
 def push_diagnosis_record(record: dict):
@@ -40,6 +41,7 @@ def push_diagnosis_record(record: dict):
     except PyMongoError as e:
         raise HTTPException(status_code=500, detail=str(e))
 
+
 @app.get("/dashboard", response_class=HTMLResponse, tags=["Dashboard"])
 def web_dashboard():
     symptom_count = symptoms_collection.count_documents({})
@@ -47,7 +49,9 @@ def web_dashboard():
     patient_count = patients_collection.count_documents({})
     diagnosis_count = diagnosis_records_collection.count_documents({})
 
-    records = list(diagnosis_records_collection.find({}, {"_id": 0}).limit(10))
+    records = list(
+        diagnosis_records_collection.find({}, {"_id": 0}).limit(10)
+    )
 
     rows_html = ""
     for r in records:
@@ -82,7 +86,7 @@ def web_dashboard():
         </style>
     </head>
     <body>
-        <h1> MediSense AI Cloud Dashboard</h1>
+        <h1>MediSense AI Cloud Dashboard</h1>
         <div class="metrics">
             <div class="card"><h3>Total Symptoms</h3><p>{symptom_count}</p></div>
             <div class="card"><h3>Total Diseases</h3><p>{disease_count}</p></div>
