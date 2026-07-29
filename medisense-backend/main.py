@@ -1,24 +1,28 @@
 from fastapi import FastAPI, HTTPException, Request
 from fastapi.responses import HTMLResponse
-from fastapi.templating import Jinja2Templates
-from fastapi.staticfiles import StaticFiles
+from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 from typing import List, Optional
 import uvicorn
 
-# db.py එකෙන් database connections import කරගැනීම
+
 from db import get_db, test_connection
 
-# 1. FastAPI App එක මුලින්ම Define කිරීම
+
 app = FastAPI(
     title="MediSense AI Backend",
     description="Backend API and Dashboard for MediSense AI Platform",
     version="1.0.0"
 )
 
-# Template and Static files configuration (අවශ්‍ය නම් පමණක්)
-# app.mount("/static", StaticFiles(directory="static"), name="static")
-# templates = Jinja2Templates(directory="templates")
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],  
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 
 # --- Models ---
@@ -33,11 +37,11 @@ class PatientRecord(BaseModel):
 # --- Startup Event ---
 @app.on_event("startup")
 async def startup_db_client():
-    """Server එක start වෙද්දී MongoDB Connection එක test කිරීම"""
-    if test_connection():
-        print(" Successfully connected to MongoDB on port 27018!")
-    else:
-        print(" Failed to connect to MongoDB. Check if mongod process is running.")
+    
+    try:
+        await test_connection()
+    except Exception as e:
+        print(f"MongoDB startup connection error: {e}")
 
 
 # --- Routes ---
@@ -49,32 +53,59 @@ async def root():
 
 @app.get("/health", tags=["General"])
 async def health_check():
-    """Database connection status එක පරික්ෂා කිරීම"""
-    is_connected = test_connection()
-    return {
-        "status": "healthy" if is_connected else "unhealthy",
-        "database": "connected" if is_connected else "disconnected"
-    }
+    
+    try:
+        await test_connection()
+        return {"status": "healthy", "database": "connected"}
+    except Exception:
+        return {"status": "unhealthy", "database": "disconnected"}
+
+
+
+@app.get("/patients", tags=["Patients"])
+async def get_all_patients():
+    
+    try:
+        db = get_db()
+        patients_cursor = db.patients.find({})
+        patient_list = await patients_cursor.to_list(length=100)
+        
+        
+        for patient in patient_list:
+            patient["_id"] = str(patient["_id"])
+            
+        return {"status": "success", "data": patient_list}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Failed to fetch patients: {str(e)}")
+
+
+@app.post("/patients", tags=["Patients"])
+async def create_patient(patient: PatientRecord):
+    
+    try:
+        db = get_db()
+        patient_dict = patient.dict()
+        result = await db.patients.insert_one(patient_dict)
+        return {"status": "success", "inserted_id": str(result.inserted_id)}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Failed to add patient: {str(e)}")
 
 
 @app.get("/dashboard", response_class=HTMLResponse, tags=["Dashboard"])
 async def render_dashboard(request: Request):
     """
-    Dashboard එක render කිරීම සහ MongoDB වලින් Data ලබා ගැනීම.
+    HTML Dashboard එක render කිරීම සහ MongoDB වලින් Data ලබා ගැනීම.
     """
     try:
         db = get_db()
-        # MongoDB collection එකෙන් රෝගී සටහන් ලබා ගැනීම
-        records_cursor = db.patients.find().limit(50)
-        patient_records = list(records_cursor)
         
-        # Defensive processing for symptoms list rendering
+        records_cursor = db.patients.find()
+        patient_records = await records_cursor.to_list(length=50)
+        
         processed_records = []
         for record in patient_records:
-            # MongoDB _id එක string බවට හැරවීම
             record["_id"] = str(record["_id"])
             
-            # symptoms field එක නැතිනම් හෝ list එකක් නොවේ නම් empty list එකක් සෙට් කිරීම
             raw_symptoms = record.get("symptoms", [])
             if isinstance(raw_symptoms, list):
                 record["symptoms"] = [str(s) for s in raw_symptoms]
@@ -85,7 +116,7 @@ async def render_dashboard(request: Request):
                 
             processed_records.append(record)
 
-        # Simple Inline HTML Dashboard Rendering
+        # HTML Dashboard Structure
         html_content = f"""
         <!DOCTYPE html>
         <html>
@@ -143,20 +174,7 @@ async def render_dashboard(request: Request):
         return HTMLResponse(content=html_content, status_code=200)
 
     except Exception as e:
-        # DB Error හෝ වෙනත් Runtime error එකක් ආවොත් 500 Error response එකක් යැවීම
         raise HTTPException(status_code=500, detail=f"Dashboard Error: {str(e)}")
-
-
-@app.post("/patients", tags=["Patients"])
-async def create_patient(patient: PatientRecord):
-    """අලුත් රෝගී සටහනක් MongoDB එකට එකතු කිරීම"""
-    try:
-        db = get_db()
-        patient_dict = patient.dict()
-        result = db.patients.insert_one(patient_dict)
-        return {"status": "success", "inserted_id": str(result.inserted_id)}
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Failed to add patient: {str(e)}")
 
 
 if __name__ == "__main__":
