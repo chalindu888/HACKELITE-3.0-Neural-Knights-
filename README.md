@@ -20,11 +20,11 @@ A production-grade, trilingual Flutter application and Python FastAPI backend fo
 - **Smart Patient Search**: Real-time filtering of patient records by name or phone number.
 - **Patient History Tracking**: Quick selection of active patient profiles for consecutive health evaluations.
 
-### 🩺 Comprehensive Symptom & Vitals Assessment
+###  Comprehensive Symptom & Vitals Assessment
 - **370+ Feature Dataset**: Supports a rich set of boolean symptoms and numerical vital parameters (Pulse Rate, Systolic/Diastolic BP, Temperature).
 - **Interactive Form Controls**: Micro-animated switches, numeric inputs with range helpers, and dynamic summary screens.
 
-### 🤖 AI-Powered Risk Triage & Prediction Engine
+###  AI-Powered Risk Triage & Prediction Engine
 - **Disease Inference**: Intelligent symptom matching against clinical dataset dictionaries (`symptoms_list.json`, `diseases_labels.json`).
 - **4-Tier Risk Triage**: Color-coded risk classification:
   - 🟢 **Low Risk**
@@ -34,17 +34,17 @@ A production-grade, trilingual Flutter application and Python FastAPI backend fo
 - **Ranked Differential Diagnosis**: Visual probability breakdown for primary and secondary conditions.
 - **Confidence Scoring**: Confidence metrics computed per assessment.
 
-### 💬 Integrated Patient SMS Notification
+###  Integrated Patient SMS Notification
 - **One-Touch SMS Generation**: Formats assessment summaries into localized SMS messages.
 - **Native Messaging Integration**: Directly launches native SMS client (`url_launcher`) with pre-filled patient text or copies to clipboard.
 
-### 📊 Assessment History & Dashboard
+###  Assessment History & Dashboard
 - **Offline History Log**: View, filter by risk triage level, inspect detailed records, or delete past assessments.
 - **Web Admin Dashboard**: FastAPI HTML dashboard (`/dashboard`) displaying patient records synced to MongoDB.
 
 ---
 
-## 🛠️ Tech Stack
+##  Tech Stack
 
 ### **Frontend (Mobile & Web)**
 - **Framework**: [Flutter 3.x](https://flutter.dev/) / Dart 3.x
@@ -66,7 +66,7 @@ A production-grade, trilingual Flutter application and Python FastAPI backend fo
 
 ---
 
-## 📂 Project Structure
+##  Project Structure
 
 ```text
 MediSense-AI/
@@ -95,7 +95,7 @@ MediSense-AI/
 
 ---
 
-## ⚡ Quick Start Guide
+##  Quick Start Guide
 
 ### Prerequisites
 - [Flutter SDK 3.x+](https://docs.flutter.dev/get-started/install)
@@ -153,5 +153,5 @@ MediSense-AI/
 
 ---
 
-## 🏆 Hackathon Details
+##  Hackathon Details
 Built by **Team Neural Knights** for **HACKELITE 3.0**.
