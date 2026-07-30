@@ -15,7 +15,7 @@ A production-grade, trilingual Flutter application and Python FastAPI backend fo
 - **Local Database**: Built with Hive NoSQL local storage for fast, reliable offline access.
 - **Zero Dependency on Internet**: Patient registration, symptom assessments, diagnosis history, and preferences persist locally without requiring live server connections.
 
-### 👤 Patient Management & Quick Lookup
+### Patient Management & Quick Lookup
 - **Fast Registration**: Form-validated registration capture for name, phone number, age, gender, and clinical notes.
 - **Smart Patient Search**: Real-time filtering of patient records by name or phone number.
 - **Patient History Tracking**: Quick selection of active patient profiles for consecutive health evaluations.
