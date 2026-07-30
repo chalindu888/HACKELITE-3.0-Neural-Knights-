@@ -76,4 +76,4 @@ The frontend is a trilingual mobile application built with Flutter.
    ```
 
 ##  Hackathon Details
-Built with ❤️ by **Team Neural Knights** for **HACKELITE 3.0**.
+Built by **Team Neural Knights** for **HACKELITE 3.0**.
