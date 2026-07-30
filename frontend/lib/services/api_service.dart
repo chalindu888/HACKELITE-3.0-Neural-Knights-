@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'package:flutter/foundation.dart';
 import 'package:http/http.dart' as http;
 import '../config/api_config.dart';
 
@@ -14,7 +15,7 @@ class ApiService {
         return [];
       }
     } catch (e) {
-      print("Error fetching symptoms: $e");
+      debugPrint("Error fetching symptoms: $e");
       return [];
     }
   }
@@ -40,7 +41,7 @@ class ApiService {
 
       return response.statusCode == 200;
     } catch (e) {
-      print("Error uploading diagnosis: $e");
+      debugPrint("Error uploading diagnosis: $e");
       return false;
     }
   }

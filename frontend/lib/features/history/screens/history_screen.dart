@@ -73,7 +73,7 @@ class _HistoryScreenState extends State<HistoryScreen> {
             onPressed: () async {
               Navigator.pop(ctx);
               await _deleteAssessment(id);
-              if (mounted) {
+              if (context.mounted) {
                 ScaffoldMessenger.of(context).showSnackBar(
                   SnackBar(content: Text(lang.translate('record_deleted'))),
                 );

@@ -119,7 +119,7 @@ class _SymptomHealthScreenState extends State<SymptomHealthScreen> {
                             style: const TextStyle(fontWeight: FontWeight.w500, fontSize: 15),
                           ),
                           value: isChecked,
-                          activeColor: const Color(0xFF0D9488),
+                          activeThumbColor: const Color(0xFF0D9488),
                           onChanged: (val) {
                             prov.updateFeature(f.id, val);
                           },
