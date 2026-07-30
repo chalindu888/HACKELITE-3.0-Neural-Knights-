@@ -1,13 +1,13 @@
-# MediSense AI 🏥
+# MediSense AI 
 **HACKELITE 3.0 - Team Neural Knights**
 
 A production-grade, trilingual Flutter application and Python FastAPI backend for AI-driven clinical symptom assessment, patient risk triage, and healthcare decision support.
 
 ---
 
-## 🚀 Key Features
+##  Key Features
 
-### 🌐 Trilingual Localization Support
+###  Trilingual Localization Support
 - **Multi-language Interface**: Full native support for **English**, **Sinhala (සිංහල)**, and **Tamil (தமிழ்)** with instant language switching.
 - **Localized Recommendations**: Actionable clinical triage advice and patient SMS summaries generated in the user's selected language.
 
