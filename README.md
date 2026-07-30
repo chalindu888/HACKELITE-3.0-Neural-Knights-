@@ -28,7 +28,6 @@ MediSense-AI/
 - [Python 3.9+](https://www.python.org/downloads/)
 - [MongoDB](https://www.mongodb.com/try/download/community) (Running locally on port `27018`)
 
----
 
 ### 1. Backend Setup (FastAPI)
 The backend is built with FastAPI and connects to a MongoDB database.
@@ -57,7 +56,7 @@ The backend is built with FastAPI and connects to a MongoDB database.
    ```
    *The API will be available at `http://127.0.0.1:8000`. You can view the dashboard at `http://127.0.0.1:8000/dashboard`.*
 
----
+
 
 ### 2. Frontend Setup (Flutter)
 The frontend is a trilingual mobile application built with Flutter.
