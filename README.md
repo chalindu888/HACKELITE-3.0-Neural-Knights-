@@ -11,7 +11,7 @@ A production-grade, trilingual Flutter application and Python FastAPI backend fo
 - **Multi-language Interface**: Full native support for **English**, **Sinhala (සිංහල)**, and **Tamil (தமிழ்)** with instant language switching.
 - **Localized Recommendations**: Actionable clinical triage advice and patient SMS summaries generated in the user's selected language.
 
-### 📶 Offline-First Architecture (Hive Storage)
+###  Offline-First Architecture (Hive Storage)
 - **Local Database**: Built with Hive NoSQL local storage for fast, reliable offline access.
 - **Zero Dependency on Internet**: Patient registration, symptom assessments, diagnosis history, and preferences persist locally without requiring live server connections.
 
