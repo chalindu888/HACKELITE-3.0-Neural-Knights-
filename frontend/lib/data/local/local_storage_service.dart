@@ -81,6 +81,15 @@ class LocalStorageService {
     return list;
   }
 
+  static List<Assessment> getUnsyncedAssessments() {
+    return getAllAssessments().where((a) => !a.isSynced).toList();
+  }
+
+  static Future<void> updateAssessment(Assessment assessment) async {
+    final jsonStr = jsonEncode(assessment.toJson());
+    await _assessmentsBox?.put(assessment.id, jsonStr);
+  }
+
   static Future<void> deleteAssessment(String id) async {
     await _assessmentsBox?.delete(id);
   }
