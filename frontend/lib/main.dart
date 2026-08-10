@@ -5,12 +5,16 @@ import 'core/localization/language_provider.dart';
 import 'data/local/local_storage_service.dart';
 import 'features/assessment/logic/assessment_provider.dart';
 import 'features/home/screens/home_screen.dart';
+import 'services/sync_engine.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   
   // Initialize Hive offline storage
   await LocalStorageService.init();
+
+  // Initialize Sync Engine for background uploads
+  SyncEngine().initialize();
 
   runApp(const MediSenseApp());
 }
