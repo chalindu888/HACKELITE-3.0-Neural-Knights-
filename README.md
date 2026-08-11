@@ -1,157 +1,138 @@
 # MediSense AI 
 **HACKELITE 3.0 - Team Neural Knights**
 
-A production-grade, trilingual Flutter application and Python FastAPI backend for AI-driven clinical symptom assessment, patient risk triage, and healthcare decision support.
+**Short Description:**  
+MediSense AI is a production-grade, trilingual Flutter mobile application and Next.js Web Dashboard, backed by a Python FastAPI server. It is designed to empower Community Health Workers (CHWs) with offline AI-driven clinical symptom assessment, patient risk triage, Bluetooth vitals integration, and seamless cloud syncing for real-time healthcare decision support by health officials.
 
 ---
 
-##  Key Features
+##  All Project Features
 
 ###  Trilingual Localization Support
 - **Multi-language Interface**: Full native support for **English**, **Sinhala (සිංහල)**, and **Tamil (தமிழ்)** with instant language switching.
 - **Localized Recommendations**: Actionable clinical triage advice and patient SMS summaries generated in the user's selected language.
 
-###  Offline-First Architecture (Hive Storage)
-- **Local Database**: Built with Hive NoSQL local storage for fast, reliable offline access.
-- **Zero Dependency on Internet**: Patient registration, symptom assessments, diagnosis history, and preferences persist locally without requiring live server connections.
-
-### Patient Management & Quick Lookup
-- **Fast Registration**: Form-validated registration capture for name, phone number, age, gender, and clinical notes.
-- **Smart Patient Search**: Real-time filtering of patient records by name or phone number.
-- **Patient History Tracking**: Quick selection of active patient profiles for consecutive health evaluations.
+###  AI-Powered Risk Triage & Prediction Engine (Offline)
+- **Local ML Inference**: Intelligent symptom matching using TensorFlow Lite (`tflite_flutter`) running entirely on the edge.
+- **Zero Dependency on Internet**: AI diagnosis works fully offline in remote areas.
+- **4-Tier Risk Triage**: Color-coded risk classification: 🟢 Low Risk, 🟡 Medium Risk, 🟠 High Risk, 🔴 Critical Risk.
+- **Ranked Differential Diagnosis**: Visual probability breakdown for primary and secondary conditions with confidence scores.
 
 ###  Comprehensive Symptom & Vitals Assessment
-- **370+ Feature Dataset**: Supports a rich set of boolean symptoms and numerical vital parameters (Pulse Rate, Systolic/Diastolic BP, Temperature).
-- **Interactive Form Controls**: Micro-animated switches, numeric inputs with range helpers, and dynamic summary screens.
+- **370+ Feature Dataset**: Supports a rich set of boolean symptoms and numerical vital parameters.
+- **Bluetooth Vitals Integration**: Direct Bluetooth (BLE) connection to smart devices to read real-time heart rate and vitals (`flutter_blue_plus`).
+- **Voice Input**: Multilingual speech-to-text recognition to easily capture patient symptoms (`speech_to_text`).
 
-###  AI-Powered Risk Triage & Prediction Engine
-- **Disease Inference**: Intelligent symptom matching against clinical dataset dictionaries (`symptoms_list.json`, `diseases_labels.json`).
-- **4-Tier Risk Triage**: Color-coded risk classification:
-  - 🟢 **Low Risk**
-  - 🟡 **Medium Risk**
-  - 🟠 **High Risk**
-  - 🔴 **Critical Risk**
-- **Ranked Differential Diagnosis**: Visual probability breakdown for primary and secondary conditions.
-- **Confidence Scoring**: Confidence metrics computed per assessment.
+###  Patient Management & SMS Notifications
+- **Smart Patient Lookup**: Fast, offline filtering of patient records by name or phone number.
+- **One-Touch SMS Generation**: Automatically formats assessment summaries into localized SMS messages and launches the native messaging app (`url_launcher`).
 
-###  Integrated Patient SMS Notification
-- **One-Touch SMS Generation**: Formats assessment summaries into localized SMS messages.
-- **Native Messaging Integration**: Directly launches native SMS client (`url_launcher`) with pre-filled patient text or copies to clipboard.
+###  Seamless Cloud Syncing (Offline-First)
+- **Hive NoSQL Storage**: Built with Hive local storage for fast, reliable offline access.
+- **Background SyncEngine**: When an internet connection is available, the mobile app automatically syncs all offline assessments to the FastAPI backend without manual intervention.
 
-###  Assessment History & Dashboard
-- **Offline History Log**: View, filter by risk triage level, inspect detailed records, or delete past assessments.
-- **Web Admin Dashboard**: FastAPI HTML dashboard (`/dashboard`) displaying patient records synced to MongoDB.
+###  Real-Time Web Admin Dashboard (Next.js)
+- **Live Monitoring**: Health officials can monitor new patient assessments in real-time as they are synced from the field.
+- **Geographic Hotspots**: Interactive Leaflet map integration for visualizing disease outbreaks (e.g., Dengue hotspots).
+- **Premium UI/UX**: Built with Next.js 15, Tailwind CSS v4, Glassmorphism, and Chart.js.
 
 ---
 
 ##  Tech Stack
 
-### **Frontend (Mobile & Web)**
-- **Framework**: [Flutter 3.x](https://flutter.dev/) / Dart 3.x
-- **State Management**: Provider (`provider ^6.1.2`)
-- **Offline Storage**: Hive NoSQL (`hive ^2.2.3`, `hive_flutter ^1.1.0`)
-- **Networking & Services**: `http ^1.2.0`, `uuid ^4.4.0`, `url_launcher ^6.3.0`
-- **UI & Design**: Material 3 Design Tokens, Google Fonts (`google_fonts ^6.2.1`), Custom Trilingual Localization System (`AppTranslations`)
-
-### **Backend (REST API & Sync Server)**
-- **Framework**: [FastAPI](https://fastapi.tiangolo.com/) (Python 3.9+)
-- **Server**: Uvicorn ASGI Server (`uvicorn ^0.52.0`)
-- **Database**: MongoDB (connected asynchronously via `motor ^3.7.1` & `pymongo ^4.17.0`)
-- **Validation**: Pydantic v2 (`pydantic ^2.13.4`)
-- **Environment**: `python-dotenv`
-
-### **AI / ML Ingestion Subsystem**
-- **Model Engine**: Teammate TFLite / Dataset ML Prediction Engine
-- **Artifacts**: Clinical symptom dataset mapping (`symptoms_list.json`) & disease label dictionary (`diseases_labels.json`)
+- **Mobile App (CHW Interface)**: Flutter 3.x, Dart, Provider, Hive NoSQL, `tflite_flutter`, `flutter_blue_plus`, `speech_to_text`
+- **Backend (REST API)**: Python 3.9+, FastAPI, Motor (Async MongoDB), Pydantic
+- **Web Dashboard (Admin)**: Next.js 15 (App Router), React, Tailwind CSS v4, Chart.js, React-Leaflet
+- **Database**: MongoDB (Local or Atlas)
 
 ---
 
-##  Project Structure
+##  How to Test & Run (For Judges)
 
-```text
-MediSense-AI/
-├── frontend/                         # Flutter Application
-│   ├── lib/
-│   │   ├── config/                   # Web/Platform API Configurations
-│   │   ├── core/                     # Localization, Themes, Constants
-│   │   ├── data/                     # Hive Storage Services & Data Models
-│   │   ├── features/                 # Modular Feature Architecture
-│   │   │   ├── assessment/           # Symptom Selection, Review, & Provider Logic
-│   │   │   ├── history/              # Saved Assessments & Triage Filters
-│   │   │   ├── home/                 # Main Dashboard & Quick Stats
-│   │   │   ├── patient/              # Patient Login & Registration
-│   │   │   └── results/              # Prediction & Differential Diagnosis Screens
-│   │   └── services/                 # API, Prediction Engines, & SMS Services
-│   └── pubspec.yaml                  # Flutter Dependencies
-│
-└── backend/                          # Python FastAPI Server
-    ├── db.py                         # Async MongoDB Connection Client
-    ├── main.py                       # FastAPI Endpoints & HTML Dashboard
-    ├── models.py                     # Pydantic Schemas
-    ├── seed.py                       # Database Seeding Script
-    ├── ml_model/                     # ML Dataset & Model Weights
-    └── requirements.txt              # Python Dependencies
-```
+To test the full End-to-End flow of this project, you will need to run three separate components. Please follow the steps below in order.
+
+###  Prerequisites
+- **Node.js (v18+)** - For the Web Dashboard
+- **Python (3.9+)** - For the FastAPI Backend
+- **MongoDB** - Ensure MongoDB is installed and running locally on port `27017`.
+- **Android Studio / SDK** - Required to run the Flutter app on an Android Emulator or physical device (Web/Windows builds will fail due to the native `tflite` engine).
 
 ---
 
-##  Quick Start Guide
+### Step 1: Start the Backend (FastAPI)
+The backend acts as the bridge connecting the Mobile App's synced data to the Web Dashboard.
 
-### Prerequisites
-- [Flutter SDK 3.x+](https://docs.flutter.dev/get-started/install)
-- [Python 3.9+](https://www.python.org/downloads/)
-- [MongoDB](https://www.mongodb.com/try/download/community) *(Optional, for backend sync)*
-
----
-
-### 1. Running the Frontend (Flutter)
-
-1. Navigate to the `frontend` directory:
-   ```bash
-   cd frontend
-   ```
-2. Install dependencies:
-   ```bash
-   flutter pub get
-   ```
-3. Launch the app on Chrome Web or Windows Desktop:
-   ```bash
-   # Run on Chrome
-   flutter run -d chrome
-
-   # Run on Windows Desktop
-   flutter run -d windows
-   ```
-
----
-
-### 2. Running the Backend (FastAPI Server)
-
-1. Navigate to the `backend` directory:
+1. Open a terminal and navigate to the `backend` folder:
    ```bash
    cd backend
    ```
-2. Create and activate a virtual environment:
+2. Activate the virtual environment (or create one):
    ```bash
    # Windows
-   python -m venv venv
-   .\venv\Scripts\activate
-
+   .\venv\Scripts\Activate
+   
    # Mac/Linux
-   python3 -m venv venv
    source venv/bin/activate
    ```
 3. Install dependencies:
    ```bash
    pip install -r requirements.txt
    ```
-4. Start the backend server:
+4. Run the server:
    ```bash
    python main.py
    ```
-   *The API runs at `http://127.0.0.1:8000`. Access OpenAPI Swagger documentation at [`http://127.0.0.1:8000/docs`](http://127.0.0.1:8000/docs) and the web dashboard at [`http://127.0.0.1:8000/dashboard`](http://127.0.0.1:8000/dashboard).*
+   *(You should see "Connected to MongoDB successfully!" and the server running on `http://127.0.0.1:8000`)*
 
 ---
 
-##  Hackathon Details
+### Step 2: Start the Web Dashboard (Next.js)
+This is the real-time admin panel used by health officials to monitor synced data.
+
+1. Open a **new** terminal and navigate to the `web-dashboard` folder:
+   ```bash
+   cd web-dashboard
+   ```
+2. Install Node dependencies:
+   ```bash
+   npm install
+   ```
+3. Start the development server:
+   ```bash
+   npm run dev
+   ```
+4. Open your browser and go to **[http://localhost:3000/dashboard](http://localhost:3000/dashboard)** to view the live dashboard.
+
+---
+
+### Step 3: Run the Mobile App (Flutter)
+The mobile app is used by Community Health Workers (CHWs) to assess patients.
+
+>  **CRITICAL NOTE**: Do not run this on Chrome or Windows Desktop. The app relies on `tflite_flutter` (TensorFlow Lite) which requires a native Android environment (`dart:ffi`).
+
+1. Ensure you have an **Android Emulator** running, or a physical Android device connected via USB.
+2. Open a **new** terminal and navigate to the `frontend` folder:
+   ```bash
+   cd frontend
+   ```
+3. Install Flutter dependencies:
+   ```bash
+   flutter pub get
+   ```
+4. Run the app:
+   ```bash
+   flutter run
+   ```
+5. Select your Android device/emulator from the list when prompted.
+
+---
+
+###  Testing the E2E Integration
+1. Open the Flutter Mobile App on your emulator/device.
+2. Create a new patient and run a symptom assessment to get an AI diagnosis.
+3. Tap **Complete/Save**. The `SyncEngine` will automatically send the data to the FastAPI backend.
+4. Watch the **Next.js Web Dashboard** (http://localhost:3000/dashboard) — the "Total Assessments" KPI and the "Recent Patient Assessments" table will automatically update with the new patient data in real-time!
+
+---
+
 Built by **Team Neural Knights** for **HACKELITE 3.0**.
