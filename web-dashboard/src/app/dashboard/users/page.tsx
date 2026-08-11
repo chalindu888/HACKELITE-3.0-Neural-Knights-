@@ -88,7 +88,7 @@ export default function UserDetailsPage() {
                   <tr key={user.id} className="hover:bg-slate-700/30 transition-colors group">
                     <td className="px-6 py-4 whitespace-nowrap">
                       <div className="flex items-center">
-                        <div className="flex-shrink-0 h-10 w-10 bg-slate-700 rounded-full flex items-center justify-center text-teal-400 font-bold border border-slate-600">
+                        <div className="shrink-0 h-10 w-10 bg-slate-700 rounded-full flex items-center justify-center text-teal-400 font-bold border border-slate-600">
                           {user.name.charAt(0)}
                         </div>
                         <div className="ml-4">

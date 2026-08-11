@@ -23,7 +23,7 @@ export default function MapComponent() {
   ];
 
   return (
-    <MapContainer center={mapCenter} zoom={7} className="w-full h-full min-h-[600px] rounded-2xl z-0">
+    <MapContainer center={mapCenter} zoom={7} className="w-full h-full min-h-150 rounded-2xl z-0">
       <TileLayer
         attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
         url="https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png" // Dark theme map tiles
