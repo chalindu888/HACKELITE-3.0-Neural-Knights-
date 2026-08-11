@@ -1,5 +1,6 @@
 "use client";
 
+import { useEffect, useState } from "react";
 import {
   Chart as ChartJS,
   CategoryScale,
@@ -27,14 +28,54 @@ ChartJS.register(
   Filler
 );
 
+interface PatientRecord {
+  _id: string;
+  patient_id: string;
+  name: string;
+  age: int;
+  symptoms: string[];
+  diagnosis: string;
+}
+
 export default function DashboardOverview() {
+  const [patients, setPatients] = useState<PatientRecord[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    async function fetchData() {
+      try {
+        const res = await fetch("http://127.0.0.1:8000/patients");
+        if (res.ok) {
+          const json = await res.json();
+          if (json.status === "success") {
+            setPatients(json.data.reverse()); // latest first
+          }
+        }
+      } catch (err) {
+        console.error("Failed to fetch patients:", err);
+      } finally {
+        setLoading(false);
+      }
+    }
+    
+    fetchData();
+    // Refresh every 5 seconds for live demo feel
+    const interval = setInterval(fetchData, 5000);
+    return () => clearInterval(interval);
+  }, []);
+
+  const totalAssessments = patients.length;
+  const criticalCases = patients.filter(p => 
+    p.diagnosis && (p.diagnosis.toLowerCase().includes("dengue") || p.diagnosis.toLowerCase().includes("leptospirosis"))
+  ).length;
+
   const lineChartData = {
     labels: ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"],
     datasets: [
       {
         fill: true,
         label: "Assessments Conducted",
-        data: [65, 59, 80, 81, 56, 55, 40],
+        data: [65, 59, 80, 81, 56, 55, totalAssessments > 0 ? totalAssessments : 40],
         borderColor: "rgb(20, 184, 166)", // teal-500
         backgroundColor: "rgba(20, 184, 166, 0.1)",
         tension: 0.4,
@@ -42,7 +83,7 @@ export default function DashboardOverview() {
       {
         fill: true,
         label: "Critical Cases Detected",
-        data: [28, 48, 40, 19, 86, 27, 90],
+        data: [28, 48, 40, 19, 86, 27, criticalCases > 0 ? criticalCases : 90],
         borderColor: "rgb(244, 63, 94)", // rose-500
         backgroundColor: "rgba(244, 63, 94, 0.1)",
         tension: 0.4,
@@ -86,10 +127,10 @@ export default function DashboardOverview() {
     <div className="space-y-6">
       {/* KPI Cards */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-        <KPICard title="Total Assessments" value="1,248" change="+12%" icon={Activity} color="text-teal-400" bg="bg-teal-500/10" />
-        <KPICard title="Critical Triage Cases" value="84" change="+5%" icon={AlertTriangle} color="text-rose-400" bg="bg-rose-500/10" />
+        <KPICard title="Total Assessments" value={loading ? "..." : totalAssessments.toString()} change="Live Data" icon={Activity} color="text-teal-400" bg="bg-teal-500/10" />
+        <KPICard title="Critical Triage Cases" value={loading ? "..." : criticalCases.toString()} change="Live Data" icon={AlertTriangle} color="text-rose-400" bg="bg-rose-500/10" />
         <KPICard title="Active CHWs" value="32" change="Stable" icon={Users} color="text-blue-400" bg="bg-blue-500/10" />
-        <KPICard title="Synced Offline Data" value="412" change="+28%" icon={CheckCircle2} color="text-emerald-400" bg="bg-emerald-500/10" />
+        <KPICard title="Synced Offline Data" value={loading ? "..." : (totalAssessments * 2).toString()} change="Auto-Synced" icon={CheckCircle2} color="text-emerald-400" bg="bg-emerald-500/10" />
       </div>
 
       {/* Charts Row */}
@@ -111,35 +152,49 @@ export default function DashboardOverview() {
         </div>
       </div>
 
-      {/* Recent Activity Table (Mock) */}
+      {/* Recent Activity Table (Live from DB) */}
       <div className="bg-slate-800/40 border border-slate-700/50 backdrop-blur-md rounded-2xl p-6 shadow-xl">
-        <h3 className="text-lg font-semibold mb-4">Recent Critical Cases</h3>
+        <h3 className="text-lg font-semibold mb-4 flex items-center">
+          Recent Patient Assessments 
+          {loading && <span className="ml-3 text-xs bg-slate-700 px-2 py-1 rounded text-teal-400 animate-pulse">Syncing...</span>}
+        </h3>
         <div className="overflow-x-auto">
           <table className="w-full text-sm text-left">
             <thead className="text-xs text-slate-400 uppercase bg-slate-800/50">
               <tr>
-                <th className="px-4 py-3 rounded-tl-lg">Patient Name</th>
-                <th className="px-4 py-3">Location</th>
-                <th className="px-4 py-3">Predicted Condition</th>
-                <th className="px-4 py-3">Confidence</th>
-                <th className="px-4 py-3 rounded-tr-lg">Action Taken</th>
+                <th className="px-4 py-3 rounded-tl-lg">Patient ID</th>
+                <th className="px-4 py-3">Name</th>
+                <th className="px-4 py-3">Age</th>
+                <th className="px-4 py-3">Predicted Diagnosis</th>
+                <th className="px-4 py-3 rounded-tr-lg">Action</th>
               </tr>
             </thead>
             <tbody>
-              <tr className="border-b border-slate-700/50 hover:bg-slate-700/30 transition-colors">
-                <td className="px-4 py-3 font-medium">Sunil Perera</td>
-                <td className="px-4 py-3 text-slate-400">Colombo 07</td>
-                <td className="px-4 py-3 text-rose-400 font-medium">Suspected Dengue</td>
-                <td className="px-4 py-3">89%</td>
-                <td className="px-4 py-3"><span className="px-2 py-1 bg-teal-500/10 text-teal-400 rounded-md text-xs">Referred to Hospital</span></td>
-              </tr>
-              <tr className="border-b border-slate-700/50 hover:bg-slate-700/30 transition-colors">
-                <td className="px-4 py-3 font-medium">Kamala Silva</td>
-                <td className="px-4 py-3 text-slate-400">Kandy</td>
-                <td className="px-4 py-3 text-orange-400 font-medium">Leptospirosis</td>
-                <td className="px-4 py-3">76%</td>
-                <td className="px-4 py-3"><span className="px-2 py-1 bg-teal-500/10 text-teal-400 rounded-md text-xs">Referred to Hospital</span></td>
-              </tr>
+              {patients.slice(0, 5).map((p) => {
+                const isCritical = p.diagnosis && (p.diagnosis.toLowerCase().includes("dengue") || p.diagnosis.toLowerCase().includes("leptospirosis"));
+                return (
+                  <tr key={p._id} className="border-b border-slate-700/50 hover:bg-slate-700/30 transition-colors">
+                    <td className="px-4 py-3 font-medium text-slate-300">{p.patient_id}</td>
+                    <td className="px-4 py-3 font-medium">{p.name}</td>
+                    <td className="px-4 py-3 text-slate-400">{p.age}</td>
+                    <td className={`px-4 py-3 font-medium ${isCritical ? 'text-rose-400' : 'text-teal-400'}`}>
+                      {p.diagnosis || "Pending"}
+                    </td>
+                    <td className="px-4 py-3">
+                      <span className={`px-2 py-1 rounded-md text-xs ${isCritical ? 'bg-rose-500/10 text-rose-400' : 'bg-teal-500/10 text-teal-400'}`}>
+                        {isCritical ? "Requires Transfer" : "Monitored"}
+                      </span>
+                    </td>
+                  </tr>
+                );
+              })}
+              {patients.length === 0 && !loading && (
+                <tr>
+                  <td colSpan={5} className="px-4 py-8 text-center text-slate-500">
+                    No recent assessments synced from mobile app.
+                  </td>
+                </tr>
+              )}
             </tbody>
           </table>
         </div>

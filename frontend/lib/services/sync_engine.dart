@@ -54,6 +54,8 @@ class SyncEngine {
 
         bool success = await ApiService.sendDiagnosisData(
           patientId: assessment.patient.id,
+          name: assessment.patient.name,
+          age: assessment.patient.age,
           symptoms: activeSymptoms,
           predictedDisease: assessment.predictionResult.predictedCondition,
           confidence: assessment.predictionResult.confidence.toStringAsFixed(2),
