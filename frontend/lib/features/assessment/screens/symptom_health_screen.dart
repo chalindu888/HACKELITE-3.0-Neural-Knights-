@@ -5,6 +5,7 @@ import 'package:permission_handler/permission_handler.dart';
 import '../../../core/localization/language_provider.dart';
 import '../../../data/models/health_feature.dart';
 import '../../assessment/logic/assessment_provider.dart';
+import '../../../services/ble_service.dart';
 import 'review_screen.dart';
 
 class SymptomHealthScreen extends StatefulWidget {
@@ -20,6 +21,11 @@ class _SymptomHealthScreenState extends State<SymptomHealthScreen> {
   bool _isListening = false;
   String _text = '';
 
+  // BLE State
+  final BleService _bleService = BleService();
+  bool _isBleConnected = false;
+  int _currentHeartRate = 0;
+
   @override
   void initState() {
     super.initState();
@@ -31,6 +37,22 @@ class _SymptomHealthScreenState extends State<SymptomHealthScreen> {
         _numControllers[f.id] = TextEditingController(text: val.toString());
       }
     }
+
+    // Listen to BLE Heart Rate Updates
+    _bleService.onHeartRateUpdate = (hr) {
+      if (mounted) {
+        setState(() {
+          _isBleConnected = true;
+          _currentHeartRate = hr;
+        });
+        // Update the pulse text field
+        final pulseFeatureId = HealthFeature.prototypeFeatures.firstWhere((f) => f.translationKey == 'pulse').id;
+        if (_numControllers.containsKey(pulseFeatureId)) {
+          _numControllers[pulseFeatureId]!.text = hr.toString();
+          Provider.of<AssessmentProvider>(context, listen: false).updateFeature(pulseFeatureId, hr);
+        }
+      }
+    };
   }
 
   @override
@@ -38,12 +60,13 @@ class _SymptomHealthScreenState extends State<SymptomHealthScreen> {
     for (var c in _numControllers.values) {
       c.dispose();
     }
+    _bleService.disconnect();
+    _bleService.stopSimulation();
     super.dispose();
   }
 
   void _listen() async {
     if (!_isListening) {
-      // Request permission
       var status = await Permission.microphone.request();
       if (status != PermissionStatus.granted) {
         ScaffoldMessenger.of(context).showSnackBar(
@@ -52,14 +75,9 @@ class _SymptomHealthScreenState extends State<SymptomHealthScreen> {
         return;
       }
 
-      bool available = await _speech.initialize(
-        onStatus: (val) => print('onStatus: $val'),
-        onError: (val) => print('onError: $val'),
-      );
-
+      bool available = await _speech.initialize();
       if (available) {
         setState(() => _isListening = true);
-        
         final langProvider = Provider.of<LanguageProvider>(context, listen: false);
         String localeId = 'en_US';
         if (langProvider.currentLanguage.code == 'si') localeId = 'si_LK';
@@ -83,8 +101,6 @@ class _SymptomHealthScreenState extends State<SymptomHealthScreen> {
 
   void _analyzeSpeechForSymptoms(String transcript, String langCode) {
     final prov = Provider.of<AssessmentProvider>(context, listen: false);
-    
-    // Map of keywords per language
     final keywords = {
       'has_fever': {'en': ['fever'], 'si': ['උණ'], 'ta': ['காய்ச்சல்']},
       'has_cough': {'en': ['cough'], 'si': ['කැස්ස'], 'ta': ['இருமல்']},
@@ -99,10 +115,84 @@ class _SymptomHealthScreenState extends State<SymptomHealthScreen> {
       for (var word in words) {
         if (transcript.contains(word)) {
           prov.updateFeature(featureId, true);
-          break; // Found one keyword for this feature, check it and move on
+          break;
         }
       }
     });
+  }
+
+  void _showBleDialog() {
+    List<BleDevice> foundDevices = [];
+    _bleService.onDevicesFound = (devices) {
+      setState(() {
+        foundDevices = devices;
+      });
+    };
+    _bleService.startScan();
+
+    showDialog(
+      context: context,
+      builder: (context) {
+        return StatefulBuilder(
+          builder: (context, setDialogState) {
+            _bleService.onDevicesFound = (devices) {
+              setDialogState(() {
+                foundDevices = devices;
+              });
+            };
+
+            return AlertDialog(
+              title: const Text('Connect Medical Device'),
+              content: SizedBox(
+                width: double.maxFinite,
+                height: 300,
+                child: Column(
+                  children: [
+                    const Text('Scanning for BLE Vitals devices...'),
+                    const SizedBox(height: 10),
+                    Expanded(
+                      child: ListView.builder(
+                        itemCount: foundDevices.length,
+                        itemBuilder: (context, index) {
+                          final dev = foundDevices[index];
+                          return ListTile(
+                            leading: const Icon(Icons.bluetooth),
+                            title: Text(dev.name),
+                            onTap: () {
+                              _bleService.connectToDevice(dev.device);
+                              Navigator.pop(context);
+                            },
+                          );
+                        },
+                      ),
+                    ),
+                    const Divider(),
+                    ElevatedButton.icon(
+                      onPressed: () {
+                        _bleService.simulateDeviceConnection();
+                        Navigator.pop(context);
+                      },
+                      icon: const Icon(Icons.science),
+                      label: const Text('Simulate Device (Hackathon)'),
+                      style: ElevatedButton.styleFrom(backgroundColor: Colors.orange.shade100, foregroundColor: Colors.orange.shade900),
+                    )
+                  ],
+                ),
+              ),
+              actions: [
+                TextButton(
+                  onPressed: () {
+                    _bleService.stopScan();
+                    Navigator.pop(context);
+                  },
+                  child: const Text('Cancel'),
+                ),
+              ],
+            );
+          },
+        );
+      },
+    ).then((_) => _bleService.stopScan());
   }
 
   @override
@@ -127,7 +217,6 @@ class _SymptomHealthScreenState extends State<SymptomHealthScreen> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              // Active Patient Header Banner
               if (patient != null)
                 Card(
                   color: const Color(0xFFCCFBF1),
@@ -143,11 +232,7 @@ class _SymptomHealthScreenState extends State<SymptomHealthScreen> {
                             children: [
                               Text(
                                 patient.name,
-                                style: const TextStyle(
-                                  fontSize: 17,
-                                  fontWeight: FontWeight.bold,
-                                  color: Color(0xFF0F766E),
-                                ),
+                                style: const TextStyle(fontSize: 17, fontWeight: FontWeight.bold, color: Color(0xFF0F766E)),
                               ),
                               const SizedBox(height: 2),
                               Text(
@@ -223,17 +308,39 @@ class _SymptomHealthScreenState extends State<SymptomHealthScreen> {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
-                          const Icon(Icons.favorite_outline, color: Color(0xFF0D9488)),
-                          const SizedBox(width: 8),
-                          Text(
-                            lang.translate('vitals_section'),
-                            style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                          Row(
+                            children: [
+                              const Icon(Icons.favorite_outline, color: Color(0xFF0D9488)),
+                              const SizedBox(width: 8),
+                              Text(
+                                lang.translate('vitals_section'),
+                                style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                              ),
+                            ],
+                          ),
+                          IconButton(
+                            icon: Icon(_isBleConnected ? Icons.bluetooth_connected : Icons.bluetooth),
+                            color: _isBleConnected ? Colors.blue : Colors.grey,
+                            tooltip: 'Connect Medical Device',
+                            onPressed: _showBleDialog,
                           ),
                         ],
                       ),
                       const SizedBox(height: 4),
                       const Divider(),
+                      if (_isBleConnected)
+                        Padding(
+                          padding: const EdgeInsets.only(bottom: 12.0),
+                          child: Row(
+                            children: [
+                              const Icon(Icons.monitor_heart, color: Colors.red, size: 20),
+                              const SizedBox(width: 8),
+                              Text('Live Pulse: $_currentHeartRate bpm', style: const TextStyle(fontWeight: FontWeight.bold, color: Colors.red)),
+                            ],
+                          ),
+                        ),
                       const SizedBox(height: 8),
                       ...HealthFeature.prototypeFeatures
                           .where((f) => f.type == FeatureType.numerical)
@@ -268,7 +375,6 @@ class _SymptomHealthScreenState extends State<SymptomHealthScreen> {
               ),
               const SizedBox(height: 24),
 
-              // Proceed Button
               ElevatedButton.icon(
                 onPressed: () {
                   Navigator.push(
@@ -284,7 +390,7 @@ class _SymptomHealthScreenState extends State<SymptomHealthScreen> {
                   padding: const EdgeInsets.symmetric(vertical: 16),
                 ),
               ),
-              const SizedBox(height: 80), // Padding for FAB
+              const SizedBox(height: 80),
             ],
           ),
         ),
