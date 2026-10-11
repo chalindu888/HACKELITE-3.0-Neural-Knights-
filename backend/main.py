@@ -51,16 +51,18 @@ async def root():
     return {"message": "Welcome to MediSense AI API", "status": "Online"}
 
 
+
 @app.get("/health", tags=["General"])
 async def health_check():
     
     try:
         await test_connection()
         return {"status": "healthy", "database": "connected"}
+    
     except Exception:
         return {"status": "unhealthy", "database": "disconnected"}
 
-        
+
 
 
 
