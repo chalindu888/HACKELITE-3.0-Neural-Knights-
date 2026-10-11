@@ -6,6 +6,7 @@ import '../../../data/models/assessment.dart';
 import '../../../data/local/local_storage_service.dart';
 import '../../../services/prediction/prediction_service.dart';
 import '../../../services/prediction/teammate_tflite_prediction_service.dart';
+import '../../../services/sync_engine.dart';
 
 class AssessmentProvider extends ChangeNotifier {
   final PredictionService _predictionService = TeammateTflitePredictionService();
@@ -91,6 +92,10 @@ class AssessmentProvider extends ChangeNotifier {
     await LocalStorageService.saveAssessment(assessment);
     _lastSavedAssessment = assessment;
     notifyListeners();
+    
+    // Attempt to sync immediately if internet is available
+    SyncEngine().syncUnsyncedData();
+    
     return assessment;
   }
 

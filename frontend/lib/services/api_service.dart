@@ -23,6 +23,8 @@ class ApiService {
   
   static Future<bool> sendDiagnosisData({
     required String patientId,
+    required String name,
+    required int age,
     required List<String> symptoms,
     required String predictedDisease,
     required String confidence,
@@ -33,9 +35,10 @@ class ApiService {
         headers: {"Content-Type": "application/json"},
         body: jsonEncode({
           "patient_id": patientId,
+          "name": name,
+          "age": age,
           "symptoms": symptoms,
-          "predicted_disease": predictedDisease,
-          "confidence": confidence,
+          "diagnosis": "$predictedDisease (Confidence: $confidence)",
         }),
       );
 

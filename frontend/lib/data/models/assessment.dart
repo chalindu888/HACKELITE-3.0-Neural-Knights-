@@ -8,6 +8,7 @@ class Assessment {
   final Patient patient;
   final Map<String, dynamic> features;
   final PredictionResult predictionResult;
+  bool isSynced;
 
   Assessment({
     String? id,
@@ -15,6 +16,7 @@ class Assessment {
     required this.patient,
     required this.features,
     required this.predictionResult,
+    this.isSynced = false,
   })  : id = id ?? const Uuid().v4(),
         createdAt = createdAt ?? DateTime.now();
 
@@ -25,6 +27,7 @@ class Assessment {
       'patient': patient.toJson(),
       'features': features,
       'predictionResult': predictionResult.toJson(),
+      'isSynced': isSynced,
     };
   }
 
@@ -36,6 +39,7 @@ class Assessment {
       features: Map<String, dynamic>.from(json['features']),
       predictionResult: PredictionResult.fromJson(
           Map<String, dynamic>.from(json['predictionResult'])),
+      isSynced: json['isSynced'] ?? false,
     );
   }
 }

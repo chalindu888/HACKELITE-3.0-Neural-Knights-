@@ -20,6 +20,11 @@ dependencies:
   uuid: ^4.4.0
   url_launcher: ^6.3.0
   http: ^1.2.0
+  tflite_flutter: ^0.10.4
+  connectivity_plus: ^6.1.0
+  speech_to_text: ^6.6.0
+  permission_handler: ^11.3.1
+  flutter_blue_plus: ^1.33.4
 
 dev_dependencies:
   flutter_test:
