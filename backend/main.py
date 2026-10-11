@@ -60,6 +60,8 @@ async def health_check():
     except Exception:
         return {"status": "unhealthy", "database": "disconnected"}
 
+        
+
 
 
 @app.get("/patients", tags=["Patients"])
